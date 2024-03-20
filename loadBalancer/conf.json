@@ -1,0 +1,11 @@
+{
+    "port":"8080",
+    "level":"L4",
+    "strategy":"round-robin",
+    "proto":"tcp",
+    "serializer":"none",
+    "servers":[
+        "localhost:8081",
+        "localhost:8082"
+    ]
+}

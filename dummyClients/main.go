@@ -25,6 +25,6 @@ func main() {
 		}
 		// io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(2000 * time.Millisecond)
 	}
 }
