@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"loadBalancer/basicCaching"
+	rCaching "loadBalancer/redis"
 	"net"
 	"net/http"
 	"net/url"
@@ -29,10 +30,23 @@ func getUrl(strategy string) *url.URL {
 func l7balancer(w http.ResponseWriter, r *http.Request) {
 	curUrl := getUrl(data["strategy"].(string))
 
-	if data["caching"] == "basic" {
+	if data["caching"] == "baseline" {
 		cResp, exists := basicCaching.GetCachedResponse(curUrl.String())
 		if exists {
 			fmt.Println("Caching in action")
+			for key, values := range cResp.Header {
+				for _, value := range values {
+					w.Header().Add(key, value)
+				}
+			}
+			w.WriteHeader(cResp.Status)
+			w.Write(cResp.Body)
+			return
+		}
+	} else if data["caching"] == "redis" {
+		cResp, err := rCaching.GetCachedResponse(curUrl.String())
+		if err == nil && cResp != nil {
+			fmt.Println("rCaching in action")
 			for key, values := range cResp.Header {
 				for _, value := range values {
 					w.Header().Add(key, value)
@@ -65,8 +79,10 @@ func l7balancer(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("[l7loadbalancer] Error while reading response: %v", err)
 	}
-	if data["caching"] == "basic" {
+	if data["caching"] == "baseline" {
 		basicCaching.SetCache(curUrl.String(), bodyBytes, resp)
+	} else if data["caching"] == "redis" {
+		rCaching.SetCache(curUrl.String(), bodyBytes, resp)
 	}
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
