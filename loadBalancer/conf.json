@@ -1,6 +1,6 @@
 {
     "port":"8080",
-    "level":"L4",
+    "level":"L7",
     "strategy":"round-robin",
     "proto":"tcp",
     "serializer":"none",

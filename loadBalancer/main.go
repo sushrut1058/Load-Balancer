@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"loadBalancer/basicCaching"
 	"net"
 	"net/http"
 	"net/url"
@@ -26,6 +29,18 @@ func getUrl(strategy string) *url.URL {
 func l7balancer(w http.ResponseWriter, r *http.Request) {
 	curUrl := getUrl(data["strategy"].(string))
 
+	cResp, exists := basicCaching.GetCachedResponse(curUrl.String())
+	if exists {
+		for key, values := range cResp.Header {
+			for _, value := range values {
+				w.Header().Add(key, value)
+			}
+		}
+		w.WriteHeader(cResp.Status)
+		w.Write(cResp.Body)
+		return
+	}
+
 	//creation of a new request object with copied header info
 	req, error := http.NewRequest(r.Method, curUrl.String(), r.Body)
 	if error != nil {
@@ -33,15 +48,22 @@ func l7balancer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.Header = r.Header
-
+	fmt.Printf("%v\n%v\n", r, req)
 	//creation of a new client, sending the request, expecting response
 	proxy := &http.Client{}
-	resp, error := proxy.Do(req)
-	if error != nil {
+	resp, err := proxy.Do(req)
+	if err != nil {
 		http.Error(w, "Error FORWARDING request", http.StatusInternalServerError)
 		return
 	}
 	defer resp.Body.Close()
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("[l7loadbalancer] Error while reading response: %v", err)
+	}
+
+	basicCaching.SetCache(curUrl.String(), bodyBytes, resp)
 
 	for key, values := range resp.Header {
 		for _, value := range values {
@@ -49,7 +71,7 @@ func l7balancer(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(resp.StatusCode)
-
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 	io.Copy(w, resp.Body)
 }
 
