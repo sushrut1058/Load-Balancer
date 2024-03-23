@@ -29,16 +29,19 @@ func getUrl(strategy string) *url.URL {
 func l7balancer(w http.ResponseWriter, r *http.Request) {
 	curUrl := getUrl(data["strategy"].(string))
 
-	cResp, exists := basicCaching.GetCachedResponse(curUrl.String())
-	if exists {
-		for key, values := range cResp.Header {
-			for _, value := range values {
-				w.Header().Add(key, value)
+	if data["caching"] == "basic" {
+		cResp, exists := basicCaching.GetCachedResponse(curUrl.String())
+		if exists {
+			fmt.Println("Caching in action")
+			for key, values := range cResp.Header {
+				for _, value := range values {
+					w.Header().Add(key, value)
+				}
 			}
+			w.WriteHeader(cResp.Status)
+			w.Write(cResp.Body)
+			return
 		}
-		w.WriteHeader(cResp.Status)
-		w.Write(cResp.Body)
-		return
 	}
 
 	//creation of a new request object with copied header info
@@ -62,8 +65,10 @@ func l7balancer(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("[l7loadbalancer] Error while reading response: %v", err)
 	}
-
-	basicCaching.SetCache(curUrl.String(), bodyBytes, resp)
+	if data["caching"] == "basic" {
+		basicCaching.SetCache(curUrl.String(), bodyBytes, resp)
+	}
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	for key, values := range resp.Header {
 		for _, value := range values {
@@ -71,7 +76,7 @@ func l7balancer(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(resp.StatusCode)
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	io.Copy(w, resp.Body)
 }
 

@@ -2,10 +2,11 @@
     "port":"8080",
     "level":"L7",
     "strategy":"round-robin",
+    "caching":"basic",
     "proto":"tcp",
     "serializer":"none",
     "servers":[
-        "localhost:8081",
-        "localhost:8082"
+        "http://localhost:8081",
+        "http://localhost:8082"
     ]
 }

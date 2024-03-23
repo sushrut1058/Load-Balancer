@@ -1,4 +1,4 @@
-package redisCaching
+package rCaching
 
 import (
 	"fmt"
@@ -7,10 +7,10 @@ import (
 )
 
 type Cache struct {
-	StatusCode http.StatusCode `json:"StatusCode"`
-	Header     http.Header     `json:"Header"`
-	Body       []byte          `json:"Body"`
-	Validity   time.Time       `json:"Validity"`
+	StatusCode int         `json:"StatusCode"`
+	Header     http.Header `json:"Header"`
+	Body       []byte      `json:"Body"`
+	Validity   time.Time   `json:"Validity"`
 }
 
 func GetCachedResponse(key string) (Cache, bool) {
