@@ -2,7 +2,7 @@
     "port":"8080",
     "level":"L7",
     "strategy":"round-robin",
-    "caching":"redis",
+    "caching":"basic",
     "proto":"tcp",
     "serializer":"none",
     "servers":[

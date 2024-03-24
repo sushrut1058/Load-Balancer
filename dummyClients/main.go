@@ -40,7 +40,7 @@ func main() {
 		} else {
 			// resp_string := string(body)
 			// fmt.Printf("[RESPONSE]: %v\n", resp_string)
-			va := time.Now().Sub(start)
+			va := time.Since(start)
 			fmt.Printf("----------[RESPONSE TIME]-------------: %v\n", va)
 			avg += int(va)
 		}

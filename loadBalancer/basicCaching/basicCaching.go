@@ -1,26 +1,20 @@
 package basicCaching
 
 import (
+	types "loadBalancer/types"
 	"net/http"
 	"sync"
 	"time"
 )
 
-type Cache struct {
-	Status   int
-	Header   http.Header
-	Body     []byte
-	Validity time.Time
-}
-
-var CacheMap = make(map[string]*Cache)
+var CacheMap = make(map[string]*types.Cache)
 var cacheMutex = &sync.Mutex{}
 
 func SetCache(key string, body []byte, response *http.Response) {
 	cacheMutex.Lock()
 	defer cacheMutex.Unlock()
 
-	CacheMap[key] = &Cache{
+	CacheMap[key] = &types.Cache{
 		Status:   response.StatusCode,
 		Header:   response.Header.Clone(),
 		Body:     body,
@@ -29,7 +23,7 @@ func SetCache(key string, body []byte, response *http.Response) {
 
 }
 
-func GetCachedResponse(key string) (*Cache, bool) {
+func GetCachedResponse(key string) (*types.Cache, bool) {
 	cacheMutex.Lock()
 	defer cacheMutex.Unlock()
 
