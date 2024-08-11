@@ -17,7 +17,7 @@ func init() {
 
 	_, err := redisClient.Ping(ctx).Result()
 	if err != nil {
-		log.Fatalf("Couldn't connect, Error: %v", err)
+		log.Fatalf("[redis(caching)]Couldn't connect, Error: %v", err)
 	}
 
 }
