@@ -48,11 +48,12 @@ func main() {
 	fmt.Println("# Configuration stored successfully.")
 	if store.Data["level"] == "L7" {
 		fmt.Println("[main l7] starting")
-		http.HandleFunc("/", l7.L7_balancer)
+		http.HandleFunc("/*", l7.L7_balancer)
 		http.ListenAndServe(store.Port, nil)
 		fmt.Println("[main l7] listening")
 	} else {
 		listener, err := net.Listen(store.Data["proto"].(string), store.Port)
+		fmt.Println("Test", store.Data["proto"].(string), store.Data["port"].(string))
 		if err != nil {
 			fmt.Printf("[main l4] Error creating listener: %v\n", err)
 		} else {

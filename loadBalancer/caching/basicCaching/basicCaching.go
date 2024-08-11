@@ -29,6 +29,7 @@ func GetCachedResponse(key string) (*types.Cache, bool) {
 
 	resp, exists := CacheMap[key]
 	if !exists || time.Now().After(resp.Validity) {
+		delete(CacheMap, key)
 		return nil, false
 	}
 	return resp, true

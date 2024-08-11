@@ -7,6 +7,7 @@ import (
 	store "loadBalancer/store"
 	"net/http"
 	"net/url"
+	"unsafe"
 )
 
 func L7_balancer(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +30,7 @@ func L7_balancer(w http.ResponseWriter, r *http.Request) {
 					w.Header().Add(key, value)
 				}
 			}
+			fmt.Println("Size of cached resposne: ", unsafe.Sizeof(cResp.Body))
 			w.WriteHeader(cResp.Status)
 			w.Write(cResp.Body)
 			return

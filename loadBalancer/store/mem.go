@@ -19,8 +19,11 @@ var GetCachedResponse func(string) (*types.Cache, bool)
 // Function to get URL based on the current strategy
 func GetUrl(strategy string) *url.URL {
 	localIndex := atomic.AddUint64(&Index, 1)
+
 	curUrl := Servers[localIndex%uint64(len(Servers))].(string)
+	fmt.Println("Current index and url are: ", localIndex, curUrl)
 	retVal, _ := url.Parse(curUrl)
+
 	return retVal
 }
 
