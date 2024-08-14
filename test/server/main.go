@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 var response string
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(2 * time.Second)
 	fmt.Printf("[PORT: %s] Request received on server\n", os.Args[1])
 	resp := fmt.Sprintf("Hello from server at Port:%v\n, Also server says: %v\n", os.Args[1], response)
 	fmt.Fprintf(w, resp)
