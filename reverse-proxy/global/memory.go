@@ -10,3 +10,6 @@ var TotalCapacity []int
 var UrlIndex uint32
 var MaxWorkerCount int
 var counter int
+
+var RequestChannel chan RequestHandle
+var CurrentWorkerCount int32

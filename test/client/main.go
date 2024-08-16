@@ -26,7 +26,8 @@ func main() {
 		fmt.Println("", request, err)
 	}
 	avg := 0
-	k := 100000
+	k := 10
+	st := time.Now()
 	for i := 0; i < k; i++ {
 		resp, err := client.Do(request)
 		start := time.Now()
@@ -51,6 +52,7 @@ func main() {
 		// time.Sleep(10 * time.Millisecond)
 	}
 	fmt.Println("Average response time for GET requests: ", avg/k)
+	fmt.Println("Total Time taken:", time.Since(st))
 	fmt.Println("--------------------------------------------------------")
 	avg = 0
 	k = 10

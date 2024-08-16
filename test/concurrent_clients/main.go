@@ -19,6 +19,12 @@ func main() {
 			DisableKeepAlives: true, // Crucial for testing, each request to be considered a different client.
 		},
 	}
+	// go func() {
+	// 	for {
+	// 		fmt.Printf("Number of goroutines: %d\n", runtime.NumGoroutine())
+	// 		time.Sleep(10 * time.Millisecond)
+	// 	}
+	// }()
 
 	k := 10 // Number of concurrent requests
 	start := time.Now()

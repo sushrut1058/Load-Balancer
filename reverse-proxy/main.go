@@ -6,15 +6,16 @@ import (
 	"net/http"
 	"os"
 	global "reverse-proxy/global"
-	"reverse-proxy/workers"
+	"reverse-proxy/worker"
+	"time"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("request reached")
 	done := make(chan bool)
 	newRequestHandle := global.RequestHandle{Request: r, Writer: w, Processed: &done}
-	global.RequestQueue.Push(newRequestHandle)
-	fmt.Println("calling worker")
-	go workers.Do(&global.RequestQueue) //, newRequestHandle)
+	// global.RequestQueue.Push(newRequestHandle)
+	global.RequestChannel <- newRequestHandle
 	<-done
 }
 
@@ -37,15 +38,22 @@ func readConfiguration() {
 
 func main() {
 	fmt.Println("Starting . . .")
+	// go func() {
+	// 	for {
+	// 		fmt.Printf("Number of goroutines: %d\n", runtime.NumGoroutine())
+	// 		time.Sleep(10 * time.Millisecond)
+	// 	}
+	// }()
 
 	readConfiguration()
 
-	fmt.Println(global.MaxWorkerCount)
-	workers.InitializeWorkerPool(global.MaxWorkerCount)
+	worker.InitializeWorkerPool()
+	go worker.TriggerWorkers()
 
 	http.HandleFunc("/", handler)
 	fmt.Println("Handler added")
 	fmt.Println("Listening...")
+	time.Sleep(2 * time.Second)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Error while listening. error:", err)
