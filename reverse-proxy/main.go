@@ -10,11 +10,10 @@ import (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Inside handler")
 	newRequestHandle := global.RequestHandle{Request: r, Writer: w}
 	global.RequestQueue.Push(newRequestHandle)
 	fmt.Println("calling worker")
-	workers.Do(&global.RequestQueue)
+	workers.Do(&global.RequestQueue) //, newRequestHandle)
 }
 
 func readConfiguration() {

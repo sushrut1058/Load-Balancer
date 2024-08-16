@@ -6,5 +6,7 @@ var NServers int
 var Servers []Resource
 var ServerIndexMap map[string]int
 var CurrentCapacity []int
+var TotalCapacity []int
 var UrlIndex uint32
 var MaxWorkerCount int
+var counter int

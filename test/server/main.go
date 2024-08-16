@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -10,9 +11,15 @@ import (
 var response string
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("Error reading response")
+	}
+
 	fmt.Printf("[PORT: %s] Request received on server\n", os.Args[1])
-	resp := fmt.Sprintf("Hello from server at Port:%v\n, Also server says: %v\n", os.Args[1], response)
+	fmt.Println("Received Body of request:\n", string(bodyBytes))
+	resp := fmt.Sprintf("Hello from server at Port:%v\n, Also server says: %v\n", os.Args[1], string(bodyBytes))
 	fmt.Fprintf(w, resp)
 }
 

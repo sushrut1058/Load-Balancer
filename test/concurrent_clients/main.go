@@ -1,55 +1,64 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"sync"
+	"time"
 )
 
 func main() {
 	fmt.Println("Started!")
-	// file, err := os.ReadFile("body.txt")
-	// if err != nil {
-	// 	fmt.Println("Error reading file")
-	// }
 
 	var wg sync.WaitGroup
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			DisableKeepAlives: true, //crucial for testing, each request to be considered a different client.
+			DisableKeepAlives: true, // Crucial for testing, each request to be considered a different client.
 		},
 	}
-	request, err := http.NewRequest("GET", "http://localhost:8080", nil)
-	if err != nil {
-		fmt.Println("", request, err)
-	}
-	k := 10
+
+	k := 2 // Number of concurrent requests
+	start := time.Now()
 	for i := 0; i < k; i++ {
 		wg.Add(1)
-		go func() {
+		go func(id int) {
 			defer wg.Done()
-			resp, err := client.Do(request)
+
+			// Create the request body containing the ID
+			body := bytes.NewBufferString(fmt.Sprintf("Request ID: %d", id))
+			request, err := http.NewRequest("POST", "http://localhost:8080", body)
 			if err != nil {
-				fmt.Printf("Error in request: %v\n", err)
+				fmt.Printf("Error creating request: %v\n", err)
 				return
 			}
-			fmt.Printf("Request sent. Status Code: %d\n", resp.StatusCode)
-			body, error := io.ReadAll(resp.Body)
-			if error != nil {
-				fmt.Printf("Error while reading: %v\n", error)
-			} else {
-				// resp_string := string(body)
-				fmt.Printf("[RESPONSE]: %v\n", body)
+
+			// Set the content type to indicate the body is plain text
+			request.Header.Set("Content-Type", "text/plain")
+
+			resp, err := client.Do(request)
+
+			if err != nil {
+				fmt.Printf("Error in request ID %d: %v\n", id, err)
+				return
 			}
 
-			// io.Copy(io.Discard, resp.Body)
-			resp.Body.Close()
+			// Read and print the response
+			respBody, err := io.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Error while reading response ID %d: %v\n", id, err)
+			} else {
+				fmt.Printf("ID: %d, Response: %s\n", id, string(respBody))
+			}
 
-		}()
+			resp.Body.Close()
+		}(i)
 	}
 
 	wg.Wait()
+	fmt.Println("Time Elapsed:", time.Since(start))
+
 	fmt.Println("--------------------------------------------------------")
 }

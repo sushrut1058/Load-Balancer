@@ -7,6 +7,7 @@ import (
 
 func InitServerMap(serversJson map[string]interface{}) {
 	var servers []Resource
+	counter = 0
 	ServerIndexMap = make(map[string]int)
 	for key, value := range serversJson {
 		fmt.Println("starting")
@@ -18,6 +19,7 @@ func InitServerMap(serversJson map[string]interface{}) {
 	})
 	for i := range servers {
 		CurrentCapacity = append(CurrentCapacity, int(servers[i].Capacity))
+		TotalCapacity = append(TotalCapacity, int(servers[i].Capacity))
 		ServerIndexMap[servers[i].URL] = i
 	}
 	NServers = len(servers)
