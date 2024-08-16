@@ -1,4 +1,4 @@
-package rCaching
+package redisCaching
 
 import (
 	"context"

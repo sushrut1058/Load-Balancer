@@ -1,20 +1,20 @@
-package rCaching
+package redisCaching
 
 import (
 	"encoding/json"
 	"fmt"
-	types "loadBalancer/types"
 	"net/http"
+	"reverse-proxy/caching/structure"
 	"time"
 )
 
-func GetCachedResponse(key string) (*types.Cache, bool) {
+func GetCachedResponse(key string) (*structure.Cache, bool) {
 	serialized_resp, err := redisClient.Get(ctx, key).Bytes()
 	if err != nil {
 		fmt.Println("[redis(caching)] Unable to fetch!\n", err)
 		return nil, false
 	}
-	var CachedResp types.Cache
+	var CachedResp structure.Cache
 	err = json.Unmarshal(serialized_resp, &CachedResp)
 	if err != nil {
 		fmt.Println("[redis(caching)] Unable to deserialize!\n", err)
@@ -26,7 +26,7 @@ func GetCachedResponse(key string) (*types.Cache, bool) {
 
 func SetCache(key string, body []byte, response *http.Response) {
 
-	resp := &types.Cache{
+	resp := &structure.Cache{
 		Status:   response.StatusCode,
 		Header:   response.Header.Clone(),
 		Body:     body,

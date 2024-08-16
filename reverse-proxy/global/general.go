@@ -1,13 +1,18 @@
 package global
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 )
 
+func Preprocessing() {
+	readConfiguration()
+}
+
 func InitServerMap(serversJson map[string]interface{}) {
 	var servers []Resource
-	counter = 0
 	ServerIndexMap = make(map[string]int)
 	for key, value := range serversJson {
 		fmt.Println("starting")
@@ -24,4 +29,20 @@ func InitServerMap(serversJson map[string]interface{}) {
 	}
 	NServers = len(servers)
 	Servers = servers
+}
+
+func readConfiguration() {
+	file, err := os.ReadFile("config.json")
+	if err != nil {
+		fmt.Println("[main readConfiguration] Error reading file. Error:", err)
+		return
+	}
+	if err = json.Unmarshal(file, &Data); err != nil {
+		fmt.Println("[main readConfiguration] Error unmarshaling file into struct")
+		return
+	}
+	MaxWorkerCount = int(Data["maxWorkers"].(float64))
+	InitServerMap(Data["servers"].(map[string]interface{}))
+	fmt.Println("CurrentCapacity:", CurrentCapacity)
+	fmt.Println("Servers:", Servers)
 }

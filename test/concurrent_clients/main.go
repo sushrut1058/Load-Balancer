@@ -35,7 +35,7 @@ func main() {
 
 			// Create the request body containing the ID
 			body := bytes.NewBufferString(fmt.Sprintf("Request ID: %d", id))
-			request, err := http.NewRequest("POST", "http://localhost:8080", body)
+			request, err := http.NewRequest("POST", "http://localhost:8080/api", body)
 			if err != nil {
 				fmt.Printf("Error creating request: %v\n", err)
 				return

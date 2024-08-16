@@ -1,20 +1,20 @@
-package basicCaching
+package inMemory
 
 import (
-	types "loadBalancer/types"
 	"net/http"
+	"reverse-proxy/caching/structure"
 	"sync"
 	"time"
 )
 
-var CacheMap = make(map[string]*types.Cache)
+var CacheMap = make(map[string]*structure.Cache)
 var cacheMutex = &sync.Mutex{}
 
 func SetCache(key string, body []byte, response *http.Response) {
 	cacheMutex.Lock()
 	defer cacheMutex.Unlock()
 
-	CacheMap[key] = &types.Cache{
+	CacheMap[key] = &structure.Cache{
 		Status:   response.StatusCode,
 		Header:   response.Header.Clone(),
 		Body:     body,
@@ -23,7 +23,7 @@ func SetCache(key string, body []byte, response *http.Response) {
 
 }
 
-func GetCachedResponse(key string) (*types.Cache, bool) {
+func GetCachedResponse(key string) (*structure.Cache, bool) {
 	cacheMutex.Lock()
 	defer cacheMutex.Unlock()
 

@@ -1,22 +1,16 @@
 package global
 
-import (
-	"net/http"
-	"sync"
-)
-
 type Resource struct {
 	URL      string
 	Capacity float64
 }
 
-type Queue struct {
-	items []interface{}
-	mtx   sync.Mutex
-}
+var Data map[string]interface{}
+var NServers int
+var Servers []Resource
+var ServerIndexMap map[string]int
+var CurrentCapacity []int
+var TotalCapacity []int
+var MaxWorkerCount int
 
-type RequestHandle struct {
-	Request   *http.Request
-	Writer    http.ResponseWriter
-	Processed *chan bool
-}
+var CurrentWorkerCount int32

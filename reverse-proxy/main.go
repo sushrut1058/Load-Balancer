@@ -1,62 +1,62 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
-	"os"
+	"reverse-proxy/caching"
 	global "reverse-proxy/global"
+	"reverse-proxy/requests"
 	"reverse-proxy/worker"
-	"time"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func handler_l7(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("request reached")
 	done := make(chan bool)
-	newRequestHandle := global.RequestHandle{Request: r, Writer: w, Processed: &done}
-	// global.RequestQueue.Push(newRequestHandle)
-	global.RequestChannel <- newRequestHandle
+	newRequestHandle := &requests.HTTPRequestHandle{Request: r, Writer: w, Processed: &done}
+	requests.RequestChannel <- newRequestHandle
 	<-done
 }
 
-func readConfiguration() {
-	file, err := os.ReadFile("config.json")
-	if err != nil {
-		fmt.Println("[main readConfiguration] Error reading file. Error:", err)
-		return
-	}
-	if err = json.Unmarshal(file, &global.Data); err != nil {
-		fmt.Println("[main readConfiguration] Error unmarshaling file into struct")
-		return
-	}
-	// fmt.Println(global.Data)
-	global.MaxWorkerCount = int(global.Data["maxWorkers"].(float64))
-	global.InitServerMap(global.Data["servers"].(map[string]interface{}))
-	fmt.Println("CurrentCapacity:", global.CurrentCapacity)
-	fmt.Println("Servers:", global.Servers)
+func handler_l4(conn net.Conn) {
+	newRequestHandle := &requests.TCPRequestHandle{Conn: conn}
+	requests.RequestChannel <- newRequestHandle
 }
 
 func main() {
 	fmt.Println("Starting . . .")
-	// go func() {
-	// 	for {
-	// 		fmt.Printf("Number of goroutines: %d\n", runtime.NumGoroutine())
-	// 		time.Sleep(10 * time.Millisecond)
-	// 	}
-	// }()
 
-	readConfiguration()
+	global.Preprocessing()
 
-	worker.InitializeWorkerPool()
-	go worker.TriggerWorkers()
+	caching.InitCaching()
 
-	http.HandleFunc("/", handler)
-	fmt.Println("Handler added")
-	fmt.Println("Listening...")
-	time.Sleep(2 * time.Second)
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		fmt.Println("Error while listening. error:", err)
+	worker.StartWorkerPool()
+
+	if global.Data["level"] == "L7" {
+		http.HandleFunc("/", handler_l7)
+		err := http.ListenAndServe(":8080", nil)
+		if err != nil {
+			fmt.Println("Error while listening. error:", err)
+		}
+	} else if global.Data["level"] == "L4" {
+		listener, err := net.Listen(global.Data["proto"].(string), ":8080")
+		fmt.Println("Test", global.Data["proto"].(string), global.Data["port"].(string))
+		if err != nil {
+			fmt.Printf("[main l4] Error creating listener: %v\n", err)
+		} else {
+			fmt.Println("[main l4] Listener created successfully")
+		}
+		defer listener.Close()
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				fmt.Printf("[main l4] Error accepting connection: %v\n", err)
+				continue
+			}
+			go handler_l4(conn)
+		}
+	} else {
+		fmt.Println("Error! Please check the loadbalancer type")
 	}
 
 }
