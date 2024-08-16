@@ -20,7 +20,7 @@ func main() {
 		},
 	}
 
-	k := 2 // Number of concurrent requests
+	k := 10 // Number of concurrent requests
 	start := time.Now()
 	for i := 0; i < k; i++ {
 		wg.Add(1)

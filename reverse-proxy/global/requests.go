@@ -47,14 +47,11 @@ func sendRequest(r *http.Request) ([]byte, *http.Response, uint32) {
 	url_string, index := getUrl()
 	url_string = url_string + r.RequestURI
 	url, _ := url.Parse(url_string)
-	fmt.Println("[global.sendRequest()] ExternalSendRequest calling . . .")
 	bodyBytes, resp := ExternalSendRequest(url, r)
 	if bodyBytes == nil {
 		fmt.Println("Response bytes are nil!!!!")
 		return nil, &http.Response{}, 0
 	}
-	fmt.Println("[sendRequest] Body:", string(bodyBytes))
-	fmt.Println("[global.sendRequest()] Releasing resources . . .")
 	return bodyBytes, resp, index
 }
 
@@ -105,20 +102,17 @@ func forwardResponse(bodyBytes []byte, resp *http.Response, w http.ResponseWrite
 		}
 	}
 	w.WriteHeader(resp.StatusCode)
-	fmt.Println("Header:", w.Header())
-
-	fmt.Println("[FORWARD-RESPONSE] BODY:", string(bodyBytes))
 
 	io.Copy(w, io.NopCloser(bytes.NewBuffer(bodyBytes)))
 }
 
-func SendRequestAndForwardResponse(w http.ResponseWriter, r *http.Request) {
+func SendRequestAndForwardResponse(w http.ResponseWriter, r *http.Request, isProcessed *chan bool) {
 	fmt.Println("[global.SendRequestAndForwardResponse()] [Inside]")
 	bodyBytes, resp, index := sendRequest(r)
 	defer ReleaseResource(index)
-	fmt.Println("[sendandforwardresponse] after sendrequest, printing body:", string(bodyBytes))
-	fmt.Println("[sendandforwardresponse] after sendrequest, printing respHeader:", resp.Header)
-
+	fmt.Println("[sendandforwardresponse] bodybytes:", string(bodyBytes))
 	forwardResponse(bodyBytes, resp, w)
-
+	fmt.Println("[sendandforwardresponse] Forwarded response")
+	*isProcessed <- true
+	fmt.Println("isFinished")
 }

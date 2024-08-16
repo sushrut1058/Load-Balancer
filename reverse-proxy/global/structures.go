@@ -16,6 +16,7 @@ type Queue struct {
 }
 
 type RequestHandle struct {
-	Request *http.Request
-	Writer  http.ResponseWriter
+	Request   *http.Request
+	Writer    http.ResponseWriter
+	Processed *chan bool
 }

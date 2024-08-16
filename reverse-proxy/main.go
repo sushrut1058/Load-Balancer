@@ -10,10 +10,12 @@ import (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	newRequestHandle := global.RequestHandle{Request: r, Writer: w}
+	done := make(chan bool)
+	newRequestHandle := global.RequestHandle{Request: r, Writer: w, Processed: &done}
 	global.RequestQueue.Push(newRequestHandle)
 	fmt.Println("calling worker")
-	workers.Do(&global.RequestQueue) //, newRequestHandle)
+	go workers.Do(&global.RequestQueue) //, newRequestHandle)
+	<-done
 }
 
 func readConfiguration() {
@@ -38,6 +40,15 @@ func main() {
 
 	readConfiguration()
 
+	fmt.Println(global.MaxWorkerCount)
+	workers.InitializeWorkerPool(global.MaxWorkerCount)
+
 	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Handler added")
+	fmt.Println("Listening...")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Println("Error while listening. error:", err)
+	}
+
 }
