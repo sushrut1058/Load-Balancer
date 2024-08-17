@@ -2,6 +2,16 @@ package requests
 
 import "reverse-proxy/global"
 
+var LoadBalancingStrategy func(index uint32) uint32
+
+func InitLoadBalancing() {
+	if global.Data["strategy"] == "round-robin" {
+		LoadBalancingStrategy = roundRobin
+	} else {
+		LoadBalancingStrategy = weightedRoundRobin
+	}
+}
+
 func weightedRoundRobin(index uint32) uint32 {
 	if global.TotalCapacity[index] == counter {
 		counter = 0

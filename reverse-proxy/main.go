@@ -11,7 +11,6 @@ import (
 )
 
 func handler_l7(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("request reached")
 	done := make(chan bool)
 	newRequestHandle := &requests.HTTPRequestHandle{Request: r, Writer: w, Processed: &done}
 	requests.RequestChannel <- newRequestHandle
@@ -27,19 +26,18 @@ func main() {
 	fmt.Println("Starting . . .")
 
 	global.Preprocessing()
-
 	caching.InitCaching()
-
+	requests.InitLoadBalancing()
 	worker.StartWorkerPool()
 
 	if global.Data["level"] == "L7" {
 		http.HandleFunc("/", handler_l7)
-		err := http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(":"+global.Data["port"].(string), nil)
 		if err != nil {
 			fmt.Println("Error while listening. error:", err)
 		}
 	} else if global.Data["level"] == "L4" {
-		listener, err := net.Listen(global.Data["proto"].(string), ":8080")
+		listener, err := net.Listen(global.Data["proto"].(string), ":"+global.Data["port"].(string))
 		fmt.Println("Test", global.Data["proto"].(string), global.Data["port"].(string))
 		if err != nil {
 			fmt.Printf("[main l4] Error creating listener: %v\n", err)

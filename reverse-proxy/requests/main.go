@@ -87,7 +87,6 @@ func (handle *HTTPRequestHandle) SendRequestAndForwardResponse() {
 	io.Copy(w, resp.Body)
 
 	*processed <- true
-	fmt.Println("isFinished")
 }
 
 func (handle *TCPRequestHandle) SendRequestAndForwardResponse() {
@@ -102,7 +101,6 @@ func (handle *TCPRequestHandle) SendRequestAndForwardResponse() {
 		conn.Close()
 		return
 	}
-	fmt.Println("ServerConn", serverConn)
 	defer serverConn.Close()
 
 	go io.Copy(serverConn, conn)

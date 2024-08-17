@@ -11,7 +11,7 @@ It supports both Layer 7 (Application Layer) and Layer 4 (Transport Layer) load 
 - **Worker Management**: Dynamic management of worker availability, with a mechanism to handle busy states.
 - **Layer 7 Load Balancing**: Routes HTTP/HTTPS traffic to backend servers based on the URL path and other HTTP headers.
 - **Layer 4 Load Balancing**: Routes traffic using only transport layer information making it a lower latency load balancing option  
-- **Caching**: Supports basic in-memory caching and Redis caching to reduce backend load and improve response times.
+- **Caching**: Supports basic in-memory caching and Redis caching to reduce backend load and improve response times (Note: for simplicity, caching is enabled only for GET requests due to the state changing nature of POST requests)
 - **Round-Robin & Weighted Round-Robin Scheduling**: Distributes requests according to the backend servers' pre-defined capacity to handle load.
 - **Health Checks**: WIP
 

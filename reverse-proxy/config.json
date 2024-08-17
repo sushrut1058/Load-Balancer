@@ -1,7 +1,7 @@
 {
     "port":"8080",
-    "level":"L7",
-    "strategy":"round-robin",
+    "level":"L4",
+    "strategy":"weighted-round-robin",
     "caching":"redis",
     "proto":"tcp",
     "serializer":"none",

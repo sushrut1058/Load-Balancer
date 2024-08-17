@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 )
+
+var cleanupNeeded bool
 
 func Preprocessing() {
 	readConfiguration()
@@ -15,8 +18,11 @@ func InitServerMap(serversJson map[string]interface{}) {
 	var servers []Resource
 	ServerIndexMap = make(map[string]int)
 	for key, value := range serversJson {
-		fmt.Println("starting")
-		obj := Resource{URL: key, Capacity: value.(float64)}
+		url := key
+		if cleanupNeeded {
+			url = cleanURL(key)
+		}
+		obj := Resource{URL: url, Capacity: value.(float64)}
 		servers = append(servers, obj)
 	}
 	sort.SliceStable(servers, func(i, j int) bool {
@@ -42,7 +48,20 @@ func readConfiguration() {
 		return
 	}
 	MaxWorkerCount = int(Data["maxWorkers"].(float64))
+	if Data["level"] == "L4" {
+		cleanupNeeded = true
+	}
 	InitServerMap(Data["servers"].(map[string]interface{}))
 	fmt.Println("CurrentCapacity:", CurrentCapacity)
 	fmt.Println("Servers:", Servers)
+}
+
+func cleanURL(url string) string {
+	// Remove "http://" or "https://" prefix if present
+	if strings.HasPrefix(url, "http://") {
+		return strings.TrimPrefix(url, "http://")
+	} else if strings.HasPrefix(url, "https://") {
+		return strings.TrimPrefix(url, "https://")
+	}
+	return url
 }

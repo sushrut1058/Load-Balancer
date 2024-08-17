@@ -16,12 +16,11 @@ func getUrl() (string, uint32) {
 	defer resourceMutex.Unlock()
 	localIndex := UrlIndex % uint32(global.NServers)
 	index_ := DistributionStrategy(localIndex)
-	fmt.Println("Index:", index_, global.Servers[index_])
 	return global.Servers[index_].URL, index_
 }
 
 func DistributionStrategy(index uint32) uint32 {
-	return weightedRoundRobin(index)
+	return LoadBalancingStrategy(index)
 }
 
 func ReleaseResource(index uint32) {
